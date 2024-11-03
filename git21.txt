@@ -1,1 +1,69 @@
-hello nov
+i want to create a self-service portal for insuarance .
+
+FUNCTIONAL REQUIREMENTS
+Users should be able to create an account, log in, and access their policy details.
+Submit a claim with required fields (policy number, type of claim, date, etc.).
+Upload supporting documents (e.g., photos, receipts).
+View claim status 
+Integration with the insurance system to sync claim data.
+Notifications for claim updates via email/SMS.
+
+NON-FUNCTIONAL REQUIREMENTS
+ Security and encryption for personal and claim data.
+ Scalability to handle peak times during catastrophic events.
+ Fast response time for UI actions and background processes.
+
+
+SYSTEM ARCHITECTURE
+Frontend: Web-based user interface (mobile-responsive), built using a technology like React or Angular.
+Backend: Microservices architecture to handle user sessions, claims, and document uploads. The backend would connect to the main insurance system through APIs.
+Integration: RESTful or SOAP APIs for data exchange between the portal and the main insurance system.
+Database: A database to store user and claims information. SQL or NoSQL depending on needs.
+
+SECURITY
+
+ Use SSL encryption.
+  Authentication through  JWT 
+ Multi-factor authentication for login
+
+WORKFLOW DESIGN
+1. User Registration and Login
+User creates an account or logs in using existing credentials from the main insurance system.
+   
+2.  Claim Submission
+User selects policy, inputs claim details, uploads documents, and submits.
+Backend validates inputs and stores claim in the portal database.
+A request is sent to the main insurance system, creating a record in the insurance application.
+ 
+
+3. Claim Processing
+Claim data is synced between the portal and the main system.
+The insurance team processes the claim, updating the status in the main system.
+Status updates are reflected in the portal.
+ 
+4. Claim Status Updates
+User can log in to track claim progress, check for any requests (additional documents or info), and receive notifications.
+
+
+Sample Screen Designs (UI/UX Screens):
+  
+Login Screen: A simple login form with email/password and an option for account recovery.
+Dashboard: Displays the user's policies and the current status of active claims.
+Claim Submission Form: Form fields for selecting policy, inputting claim type, date, description, and document upload (drag-and-drop interface).
+Claim Status Page: A timeline or progress bar showing each stage of the claim (e.g., Submitted, In Review, Approved/Denied).
+Notifications: Popup or email settings allowing users to customize alerts for status changes.
+
+
+Backend: Build the API layer to handle form submissions, file uploads, and communication with the insurance system.
+
+
+
+
+
+
+
+
+
+
+
+
