@@ -1,1 +1,185 @@
-hello
+we now want the system to be able to display the currently signed in user's resolved name,  
+so after logging in the system should then run the getresolvedname function.
+
+and then it should display it in the header where its written Policy Holder ID in div class= "profile"
+
+it should be injected in the header, here is the HTML:
+ <div class="header">
+        <div class="header-label-dashboard" id="header-label-dashboard">
+            <i class="ri-dashboard-fill"></i><h1>DASHBOAD</h1>
+        </div>
+        <div class="profile">
+            Policy holder ID &nbsp; <i class="ri-user-3-fill"></i>
+        </div>
+    </div>
+
+
+so im thinking that , after the user signs in successfully the user resolvedname save it and attach it to the session so it can be accessed from anywhere in the system / frontend whenever required just like the shortname.
+
+after user lo
+
+
+here is APIclient 
+
+const ApiClient = (() => {
+    const BASE_URL = "http://192.168.100.4:8080/api"; // Backend base URL
+
+    const defaultHeaders = {
+        "Content-Type": "application/json",
+    };
+
+    // Handle server responses
+    const handleResponse = async (response) => {
+        try {
+            // Attempt to parse the response body as JSON
+            const responseBody = await response.json();
+
+            // If response is not OK, check if responseBody has a message
+            if (!response.ok) {
+                const message = responseBody.message || response.statusText || "Something went wrong!";
+                throw new Error(`${response.status} ${message}`);
+            }
+
+            // If the response is OK, return the responseBody as is
+            return responseBody;
+        } catch (error) {
+            // If parsing JSON fails, handle unexpected content (e.g., plain text)
+            if (!response.ok) {
+                throw new Error(`${response.status} ${response.statusText}`);
+            }
+            throw new Error("Failed to process response.");
+        }
+    };
+
+    // Token utilities
+    const saveToken = (token) => localStorage.setItem("jwtToken", token);
+    const getToken = () => localStorage.getItem("jwtToken");
+    const clearToken = () => localStorage.removeItem("jwtToken");
+
+    return {
+        login: async (shortname, password) => {
+            const response = await fetch(`${BASE_URL}/users/login`, {
+                method: "POST",
+                headers: defaultHeaders,
+                body: JSON.stringify({ shortname, password }),
+            });
+
+            const data = await handleResponse(response);
+
+            // Access the token field and save it
+            const { token } = data;
+            if (!token) throw new Error("Login failed: Token not received.");
+            saveToken(token); // Save the token to localStorage
+            localStorage.setItem("shortname", shortname); // Save shortname to localStorage
+
+            return { token, shortname }; // Return token and shortname
+        },
+
+        logout: () => {
+            clearToken();
+            localStorage.removeItem("shortname"); // Clear shortname on logout
+        },
+
+        register: async (userData) => {
+            const response = await fetch(`${BASE_URL}/party/register`, {
+                method: "POST",
+                headers: defaultHeaders,
+                body: JSON.stringify(userData),
+            });
+            return handleResponse(response);
+        },
+
+        getUserPolicies: async (shortname) => {
+            const token = getToken();
+            if (!token) throw new Error("No token found. Please log in.");
+
+            const response = await fetch(`${BASE_URL}/policies/shortname/${shortname}`, {
+                method: "GET",
+                headers: {
+                    ...defaultHeaders,
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            return handleResponse(response);
+        },
+
+
+        getUserResolvedName: async () => {
+            const token = getToken();
+            const shortname = localStorage.getItem("shortname");
+            if (!token || !shortname) throw new Error("No token or username found. Please log in.");
+            const response = await fetch(`${BASE_URL}/party/resolved-name/${shortname}`, {
+                method: "GET",
+                headers: {
+                    ...defaultHeaders,
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            return handleResponse(response);
+        },
+    };
+})();
+
+export default ApiClient;
+
+here is login.js->
+import ApiClient from "./apiClient.js";
+
+document.getElementById("loginForm").addEventListener("submit", async (event) => {
+    event.preventDefault(); // Prevent form submission
+
+    const shortname = document.getElementById("shortname").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const notification = document.getElementById("notification");
+
+    // Clear previous messages
+    notification.textContent = "";
+    notification.className = "";
+
+    if (!shortname || !password) {
+        notification.textContent = "Please enter your username and password.";
+        notification.classList.add("error");
+        return;
+    }
+
+    try {
+        // Perform login
+        const { token, shortname: resolvedShortname } = await ApiClient.login(shortname, password);
+        console.log("Login successful:", { token, resolvedShortname });
+
+        // Debugging: Display token and shortname on the page
+        const debugContainer = document.createElement("div");
+        debugContainer.style.border = "1px solid #ccc";
+        debugContainer.style.marginTop = "20px";
+        debugContainer.style.padding = "10px";
+        debugContainer.style.backgroundColor = "#f9f9f9";
+        debugContainer.innerHTML = `
+            <strong>Debug Info:</strong>
+            <p>Shortname: ${resolvedShortname}</p>
+            <p>Token: ${token}</p>
+        `;
+        document.body.appendChild(debugContainer); // Append to the body for visibility
+
+        // Delay redirection to allow debugging
+        setTimeout(() => {
+            window.location.href = "dashboard.html"; // Adjust the URL as needed
+        }, 4000); // 4-second delay
+    } catch (error) {
+        console.error("Login failed:", error);
+        notification.textContent = error.message || "Login failed. Please try again.";
+        notification.classList.add("error");
+    }
+});
+
+header->
+ <div class="header">
+        <div class="header-label-dashboard" id="header-label-dashboard">
+            <i class="ri-dashboard-fill"></i><h1>DASHBOAD</h1>
+        </div>
+        <div class="profile">
+            Policy holder ID &nbsp; <i class="ri-user-3-fill"></i>
+        </div>
+    </div>
+
+
+
